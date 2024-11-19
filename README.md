@@ -12,7 +12,7 @@
   - The HTML file must specify the name of the corresponding GitHub repository.  
   - No late work will be accepted.  
   - The version submitted on Canvas must correspond to the last version on GitHub.  
-  - **No modifications** to the GitHub repository after **Dec. 1st 2024 at 11:59 PM**. Any changes will result in **zero points**.
+  - **No modifications** to the GitHub repository after **Dec. 6th 2024 at 11:59 PM**. Any changes will result in **zero points**.
 
 ---
 
