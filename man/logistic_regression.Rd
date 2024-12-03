@@ -2,22 +2,19 @@
 % Please edit documentation in R/logistic_regression.R
 \name{logistic_regression}
 \alias{logistic_regression}
-\title{Logistic Regression Estimator}
+\title{Perform Logistic Regression}
 \usage{
-logistic_regression(X, y, alpha = 0.05, n_bootstrap = 20)
+logistic_regression(X, y)
 }
 \arguments{
-\item{X}{A numeric matrix of predictor variables.}
+\item{X}{A numeric matrix of predictors, including an optional intercept column.}
 
-\item{y}{A binary response variable.}
-
-\item{alpha}{Significance level for confidence intervals.}
-
-\item{n_bootstrap}{Number of bootstrap samples for confidence intervals.}
+\item{y}{A binary numeric vector (0/1) of responses corresponding to rows in \code{X}.}
 }
 \value{
-A list containing estimated coefficients, confidence intervals, and bootstrap coefficients.
+A list with estimated coefficients, predicted probabilities, and log-likelihood.
 }
 \description{
-Logistic Regression Estimator
+Estimates coefficients for logistic regression using numerical optimization 
+to maximize the log-likelihood function.
 }

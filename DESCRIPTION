@@ -8,5 +8,6 @@ Description: This R package implements logistic regression using numerical optim
 License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 7.3.2
-Suggests: testthat
+Suggests: 
+    devtools
 

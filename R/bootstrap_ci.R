@@ -8,8 +8,8 @@
 #' @param n_boot Integer specifying the number of bootstrap iterations (default: 20).
 #' @param alpha Numeric value for the significance level (default: 0.05).
 #' @return A data frame with coefficients and their confidence intervals (lower and upper bounds).
+#' @importFrom stats quantile
 #' @export
-
 bootstrap_ci <- function(X, y, n_boot = 20, alpha = 0.05) {
   beta_estimates <- replicate(n_boot, {
     idx <- sample(1:nrow(X), replace = TRUE)
@@ -26,7 +26,3 @@ bootstrap_ci <- function(X, y, n_boot = 20, alpha = 0.05) {
   
   return(confidence_intervals)
 }
-
-### Sources
-
-<https://chatgpt.com/share/674ce00f-c60c-800c-bced-b59ec7e60786>
