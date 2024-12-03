@@ -87,3 +87,10 @@ Up to **2 bonus points** can be earned for adding other useful features, such as
 - An **example Shiny app** using the package.
 
 ---
+
+## Sources
+
+**Kyndall Source 1:** <https://chatgpt.com/share/674ce00f-c60c-800c-bced-b59ec7e60786>
+**Kyndall Source 2:** < >
+
+
