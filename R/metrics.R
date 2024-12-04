@@ -33,6 +33,9 @@ compute_metrics <- function(y_true, y_pred, threshold = 0.5) {
     NA
   )
   
+  # Calculate prevalence
+  prevalence <- mean(y_true)
+  
   # Return all metrics as a list
   list(
     confusion_matrix = confusion_matrix,
@@ -40,6 +43,7 @@ compute_metrics <- function(y_true, y_pred, threshold = 0.5) {
     sensitivity = sensitivity,
     specificity = specificity,
     false_discovery_rate = false_discovery_rate,
-    diagnostic_odds_ratio = diagnostic_odds_ratio
+    diagnostic_odds_ratio = diagnostic_odds_ratio,
+    prevalence = prevalence
   )
 }

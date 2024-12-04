@@ -8,6 +8,7 @@
 #' @return A list with estimated coefficients, predicted probabilities, and log-likelihood.
 #' @importFrom stats optim
 #' @export
+
 logistic_regression <- function(X, y) {
   X <- cbind(1, X)  # Add intercept column
   n <- nrow(X)
