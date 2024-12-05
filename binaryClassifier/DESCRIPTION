@@ -1,0 +1,13 @@
+Package: binaryClassifier
+Type: Package
+Title: Logistic Regression Package for Binary Classification
+Version: 0.1.0
+Author: Deepa, Kyndall, and Aishwarya
+Maintainer: Deepa Chaudhary <dzc0104@auburn.edu>
+Description: This R package implements logistic regression using numerical optimization methods and computes classification metrics.
+License: GPL-3
+Encoding: UTF-8
+RoxygenNote: 7.3.2
+Suggests: devtools
+NeedsCompilation: no
+Packaged: 2024-12-05 04:28:00 UTC; kyndallskelton
