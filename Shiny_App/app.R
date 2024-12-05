@@ -1,4 +1,7 @@
 library(shiny)
+if (!requireNamespace("binaryClassifier", quietly = TRUE)) {
+  install.packages("binaryClassifier_0.1.0.tar.gz", repos = NULL, type = "source")
+}
 library(binaryClassifier)
 
 # Define UI

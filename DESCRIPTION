@@ -10,4 +10,12 @@ Encoding: UTF-8
 RoxygenNote: 7.3.2
 Suggests: 
     devtools
+Imports:
+    shiny,
+    ggplot2,
+    dplyr,
+    tidyr,
+    binaryClassifier
+Remotes:
+    AU-R-Programming/FinalProject_Group3@v0.1.0
 
