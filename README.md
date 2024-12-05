@@ -91,11 +91,13 @@ Up to **2 bonus points** can be earned for adding other useful features, such as
 ## Donwloads
 R Package
 
+Download directly from the github
 ```R
-devtools::github_install("https://github.com/AU-R-Programming/FinalProject_Group3/raw/main/binaryClassifier_0.1.0.tar.gz")
+devtools::install_github("AU-R-Programming/FinalProject_Group3", subdir = "binaryClassifier")
 ```
 or
 
+Download from the release that is a part of the github repository
 ```R
 devtools::install_github("https://github.com/AU-R-Programming/FinalProject_Group3/releases/download/v0.1.0/binaryClassifier_0.1.0.tar.gz")
 ```
