@@ -4,15 +4,18 @@
 \alias{logistic_regression}
 \title{Perform Logistic Regression}
 \usage{
-logistic_regression(X, y)
+logistic_regression(X, y, lambda = 1e-05)
 }
 \arguments{
 \item{X}{A numeric matrix of predictors, including an optional intercept column.}
 
 \item{y}{A binary numeric vector (0/1) of responses corresponding to rows in \code{X}.}
+
+\item{lambda}{A small constant for ridge regularization to stabilize matrix inversion 
+(default is \code{1e-5}).}
 }
 \value{
-A list with estimated coefficients, predicted probabilities, and log-likelihood.
+A numeric vector of estimated coefficients.
 }
 \description{
 Estimates coefficients for logistic regression using numerical optimization 

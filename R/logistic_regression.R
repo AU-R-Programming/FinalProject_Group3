@@ -5,28 +5,40 @@
 #'
 #' @param X A numeric matrix of predictors, including an optional intercept column.
 #' @param y A binary numeric vector (0/1) of responses corresponding to rows in \code{X}.
-#' @return A list with estimated coefficients, predicted probabilities, and log-likelihood.
+#' @param lambda A small constant for ridge regularization to stabilize matrix inversion 
+#' (default is \code{1e-5}).
+#' @return A numeric vector of estimated coefficients.
 #' @importFrom stats optim
 #' @export
 
-logistic_regression <- function(X, y) {
-  X <- cbind(1, X)  # Add intercept column
-  n <- nrow(X)
-  p <- ncol(X)
+logistic_regression <- function(X, y, lambda = 1e-5) {
+  # Regularized initial values for stability
+  beta_init <- solve(t(X) %*% X + diag(lambda, ncol(X))) %*% t(X) %*% y
   
-  XtX <- t(X) %*% X
-  XtY <- t(X) %*% y
-  
-  beta_init <- solve(XtX, XtY)
-  
+  # Log-likelihood function
   log_likelihood <- function(beta) {
-    linear_pred <- X %*% beta
-    p <- 1 / (1 + exp(-linear_pred))
-    -sum(y * log(p) + (1 - y) * log(1 - p))
+    # Compute predicted probabilities
+    linear_predictor <- X %*% beta
+    p <- 1 / (1 + exp(-linear_predictor))
+    
+    # Prevent log(0) with a small constant
+    epsilon <- 1e-8
+    p <- pmax(pmin(p, 1 - epsilon), epsilon)
+    
+    # Negative log-likelihood with L2 regularization
+    -sum(y * log(p) + (1 - y) * log(1 - p)) + lambda * sum(beta^2)
   }
   
-  opt <- optim(par = beta_init, fn = log_likelihood, method = "BFGS")
-  beta <- opt$par
+  # Perform optimization
+  opt <- optim(
+    par = beta_init,               # Initial parameter estimates
+    fn = log_likelihood,           # Function to minimize
+    method = "L-BFGS-B",           # Optimization method
+    control = list(maxit = 1000)   # Maximum iterations
+  )
   
-  list(coefficients = beta)
+  # Return optimized parameters
+  return(opt$par)
 }
+  
+

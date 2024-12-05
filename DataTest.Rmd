@@ -1,0 +1,55 @@
+---
+title: "Testing the R Package"
+output: html_notebook
+---
+
+```{r}
+bank <- read.csv("~/Downloads/bank.csv", sep=";")
+head(bank)
+```
+
+```{r}
+bank$age_binary <- (bank$age - min(bank$age)) / (max(bank$age) - min(bank$age))
+bank$balance_binary <- ifelse(bank$balance > median(bank$balance), 1, 0)
+bank$education <- as.factor(bank$education)
+head(bank)
+```
+
+```{r}
+predictors <- bank[, c("age", "education")]
+
+response <- bank$balance_binary
+
+edu <- model.matrix(~ education - 1, data = bank)
+
+x <- cbind(1, predictors$age, edu)
+y <- response
+
+print(dim(x))
+print(length(y))
+```
+
+Logistic Regresssion
+
+```{r}
+log_reg <- logistic_regression(x, y)
+print(log_reg)
+```
+
+```{r}
+ci <- bootstrap_ci(x, y, n_boot = 15, alpha = 0.01)
+print(ci)
+```
+```{r}
+y_pred <- exp(x %*% log_reg) / (1 + exp(x %*% log_reg))
+metrics <- compute_metrics(y, y_pred, threshold = 0.5)
+print(metrics)
+```
+
+
+
+
+
+
+
+

@@ -47,39 +47,3 @@ compute_metrics <- function(y_true, y_pred, threshold = 0.5) {
     prevalence = prevalence
   )
 }
-
-bootstrap_ci <- function(X, y, n_boot = 100, alpha = 0.05) {
-  # Store bootstrap estimates for each coefficient
-  beta_estimates <- matrix(NA, nrow = n_boot, ncol = ncol(X) + 1)  # +1 for the intercept
-  
-  # Perform bootstrap resampling
-  for (i in 1:n_boot) {
-    idx <- sample(1:nrow(X), replace = TRUE)
-    # Fit logistic regression on resampled data
-    model <- logistic_regression(X[idx, ], y[idx])
-    beta_estimates[i, ] <- model$coefficients
-  }
-  
-  # Calculate the lower and upper quantiles for the confidence intervals
-  ci <- apply(beta_estimates, 2, function(x) quantile(x, probs = c(alpha / 2, 1 - alpha / 2)))
-  
-  # Assign column names to beta_estimates (coefficients including intercept)
-  colnames(beta_estimates) <- c("(Intercept)", colnames(X))
-  
-  # Create a data frame with the confidence intervals
-  confidence_intervals <- data.frame(
-    Coefficient = colnames(beta_estimates),  # Column names represent coefficients
-    Lower = ci[1, ],
-    Upper = ci[2, ]
-  )
-  
-  return(confidence_intervals)
-}
-
-# Compute bootstrap confidence intervals
-bootstrap_result <- bootstrap_ci(X_matrix, y, n_boot = 100, alpha = 0.05)
-
-# Print the results
-print(bootstrap_result)
-
-binaryClassifier::bootstrap_ci(X_matrix, y, n_boot = 100, alpha = 0.05)
