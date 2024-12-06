@@ -8,14 +8,6 @@ Description: This R package implements logistic regression using numerical optim
 License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 7.3.2
-Suggests: 
-    devtools
-Imports:
-    shiny,
-    ggplot2,
-    dplyr,
-    tidyr,
-    binaryClassifier
-Remotes:
-    AU-R-Programming/FinalProject_Group3@v0.1.0
-
+Suggests: devtools
+NeedsCompilation: no
+Packaged: 2024-12-05 04:28:00 UTC; kyndallskelton

@@ -88,32 +88,9 @@ Up to **2 bonus points** can be earned for adding other useful features, such as
 
 ---
 
-## Donwloads
-R Package
+## Sources
 
-Download directly from the github
-```R
-devtools::install_github("AU-R-Programming/FinalProject_Group3", subdir = "binaryClassifier")
-```
-or
-
-Download from the release that is a part of the github repository
-```R
-devtools::install_github("https://github.com/AU-R-Programming/FinalProject_Group3/releases/download/v0.1.0/binaryClassifier_0.1.0.tar.gz")
-```
-Shiny App:
-
-```R
-shiny::runUrl("https://github.com/AU-R-Programming/FinalProject_Group3/raw/main/Shiny_App.zip")
-```
-
-
----
-
-### Sources
-
-1. [Kyndall ChatGpt ShinyApp](https://chatgpt.com/share/6752070d-8c00-800c-8861-6cca77e63edc)
-2. [Kyndall ChatGpt Everything Else](https://chatgpt.com/share/674ce00f-c60c-800c-bced-b59ec7e60786)
-3. [Kyndall Chatgpt for Checking Matrix](https://chatgpt.com/share/675207d0-02d4-800c-b361-f50706ad87bd)
+**Kyndall Source 1:** <https://chatgpt.com/share/674ce00f-c60c-800c-bced-b59ec7e60786>
+**Kyndall Source 2:** < >
 
 
