@@ -115,6 +115,6 @@ shiny::runUrl("https://github.com/AU-R-Programming/FinalProject_Group3/raw/main/
 1. [Kyndall ChatGpt ShinyApp](https://chatgpt.com/share/6752070d-8c00-800c-8861-6cca77e63edc)
 2. [Kyndall ChatGpt Everything Else](https://chatgpt.com/share/674ce00f-c60c-800c-bced-b59ec7e60786)
 3. [Kyndall Chatgpt for Checking Matrix](https://chatgpt.com/share/675207d0-02d4-800c-b361-f50706ad87bd)
-4. [Deepa Chatgpt for R package] (https://chatgpt.com/share/6751ce12-cdb4-800c-b0a2-eb12cb78f094)
+4. [Deepa Chatgpt for R package](https://chatgpt.com/share/6751ce12-cdb4-800c-b0a2-eb12cb78f094)
 
 
