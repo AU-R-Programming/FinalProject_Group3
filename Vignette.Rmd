@@ -1,195 +1,364 @@
 ---
-title: "Vignette "
-output: html_document
-date: "2024-12-05"
+title: "R Package: binaryClassifier"
+author: "Kyndall Skelton, Deepa Chaudhary, and Aishwarya Goli"
+output: html_notebook
 ---
 
-Github Repository Name - FinalProject_Group3
+# Package Overview
 
-Pacakge - binaryClassifier
+The following details the usage of the `binaryClassifier` R package. This R package can be found in the `FinalProject_Group3` under releases.
 
+Source: `https://github.com/AU-R-Programming/FinalProject_Group3`
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+To download the R package directly from github please use the following code:
+
 ```
-## Introduction
+devtools::install_github("https://github.com/AU-R-Programming/FinalProject_Group3/releases/download/v0.1.0/binaryClassifier_0.1.0.tar.gz")
+```
 
-This vignette provides an introduction to `BinaryClassifier`, demonstrating its key features and how to use it for your analysis. `BinaryClassifier` is designed to help users perform supervised binary classification using numerical optimization.
+or
 
-## Installation
+```
+devtools::install_github("AU-R-Programming/FinalProject_Group3", subdir = "binaryClassifier")
+```
 
-To install `BinaryClassifier`, you can use the following command:
+The `binaryClassifier` package was created by group 3 for our final project in R Programming for the Data Sciences course at Auburn University.
+
+This package provides a suite of functions designed for binary classification tasks: `logistic_regression`, `bootstrap_ci`, and `compute_metrics`. The logistic_regression function estimates logistic regression coefficients ($\beta$) through numerical optimization, offering both predictive capabilities and insights into feature importance. Building on this, the `bootstrap_ci` function computes confidence intervals for the regression coefficients using bootstrap resampling, ensuring robust uncertainty estimation. Finally, the `compute_metrics` function evaluates model performance by calculating key metrics such as accuracy, sensitivity, specificity, false discovery rate, diagnostic odds ratio, and prevalence, enabling users to thoroughly assess their classification models. Together, these functions provide a comprehensive toolkit for binary classification analysis.
+
+# Utilizing the Package
+
 ```{r}
-#Install from GitHub
-#library(devtools)
-#install_github("AU-R-Programming/FinalProject_Group3")
 library(binaryClassifier)
 ```
-our package includes the following functionalities:
 
-Initial Values for Optimization
+To show how to properly format data to use the package a data frame called `bank.csv` was used. The data frame was downloaded from the course canvas page and is not readily avaliable at this time. However, to make things easier for interpretation, only three columns were utilized in this example data analysis. The columns are as follows:
 
-Bootstrap Confidence Intervals
-
-Confusion Matrix
-
--Prevalence
-
--Accuracy
-
--Sensitivity
-
--Specificity
-
--False Discovery Rate
-
--Diagnostic Odds Ratio
-
-## Reading the data 
-
-This dataset is taken from canvas course page.
+  * **Age**: Column contains the age of members at a bank
+  * **Education**: Column contains information about the education level of members at the bank and only includes four levels which are: Primary, Secondary, Tertiary, and unknown.
+  * **Balance**: The balance column contains information about how much money that specific member had in their account at the time the study was conducted
+  
+A preview of the data frame is shown below:
 
 ```{r}
-bank <- read.csv("C:\\Users\\aishw\\Downloads\\bank.csv", sep=";")
-
 head(bank)
 ```
+In order the get the data to be interpreted by the package as desired the following steps need to be taken:
 
-## Preparing the data
+**Step 1: Response is Binary**
 
-```{r}
-bank$age_binary <- (bank$age - min(bank$age)) / (max(bank$age) - min(bank$age))
+The response variable that is plugged into the regression needs to be in binary.
+
+```{R}
 bank$balance_binary <- ifelse(bank$balance > median(bank$balance), 1, 0)
-bank$education <- as.factor(bank$education)
-head(bank)
 ```
+
+To accomplish this in the `bank.csv` data frame the median of the balance column was taken. If the balance was greater than the median value a 1 was assigned to the value in the data frame, and if the balance was less than the median value a 0 was assigned. 
+
+**Step 2: Make the Predictor that has the Levels of Interest a Factor**
+
+```{r}
+bank$education <- as.factor(bank$education)
+```
+
+By turning the education column into a factor, the various levels of education are represented as individual categories that will be represented as independent groups during the data analysis.
+
+**Step 3: Pull out the Columns of Interest**
 
 ```{r}
 predictors <- bank[, c("age", "education")]
-
-response <- bank$balance_binary
-
-edu <- model.matrix(~ education - 1, data = bank)
-
-x <- cbind(1, predictors$age, edu)
-y <- response
-
-print(dim(x))
-print(length(y))
+y <- bank$balance_binary
 ```
-## Usage of Our Package functions with above dataset
 
-We have three functions included in this package , below expalins the how to use these pacakge functions with examples.
+The `predictors` variables is selecting age and education as the features for this model, and the `y` variable is the binary balance column and is the target for classification.
 
+**Step 4: One-Hot Encode the Education Column**
 
-## FUNCTION-1-Logistic Regresssion
+One-Hot encoding involves transforming data into a matrix of dummy variables using the `model.matrix` function.This ensures that the education column which is currently a factor is changed into its own binary column. The intercept is removed from the created matrix using -1 because it is handled at a later point in the analysis.
 
+```{r}
+edu <- model.matrix(~ education - 1, data = bank)
+```
 
- `logistic_regression()` function, which estimates the coefficients of a logistic regression model using numerical optimization. The function maximizes the log-likelihood to estimate the model parameters.
+**Step 5: Create a Design Matrix**
 
+```{r}
+x <- cbind(1, predictors$age, edu)
+```
+
+The design matrix is designated as `x` and contains the intercept term, age column, and the dummy coded education column. At this point in the analysis it is crucial to compare the dimensions of matrix x and the length of the response variable y. **If they are not the same the functions will not work**.
+
+```{r}
+dim(x)
+```
+
+```{r}
+length(y)
+```
+
+The dimensions of the matrix match the length of vector, so it is time to proceed to package utilization.
+
+## Function for Logistic Regression
+
+The following is the code for the logistic regression function contained in the R package.
+
+```
+logistic_regression <- function(X, y, lambda = 1e-5) {
+  # Regularized initial values for stability
+  beta_init <- solve(t(X) %*% X + diag(lambda, ncol(X))) %*% t(X) %*% y
+  
+  # Log-likelihood function
+  log_likelihood <- function(beta) {
+    # Compute predicted probabilities
+    linear_predictor <- X %*% beta
+    p <- 1 / (1 + exp(-linear_predictor))
+    
+    # Prevent log(0) with a small constant
+    epsilon <- 1e-8
+    p <- pmax(pmin(p, 1 - epsilon), epsilon)
+    
+    # Negative log-likelihood with L2 regularization
+    -sum(y * log(p) + (1 - y) * log(1 - p)) + lambda * sum(beta^2)
+  }
+  
+  # Perform optimization
+  opt <- optim(
+    par = beta_init,               # Initial parameter estimates
+    fn = log_likelihood,           # Function to minimize
+    method = "L-BFGS-B",           # Optimization method
+    control = list(maxit = 1000)   # Maximum iterations
+  )
+  
+  # Return optimized parameters
+  return(opt$par)
+}
+  
+```
+**Overview**
+
+The `logistic_regression` function performs logistic regression with L2 regularization (ridge regression) using numerical optimization. It takes the following inputs:
+
+- **Design matrix \(X\)**: Predictor variables.
+- **Binary response vector \(y\)**: The outcome variable.
+- **Regularization parameter \(\lambda\)**: Controls the strength of regularization.
+
+The function begins by calculating an initial estimate of the coefficients (\(\beta\)) using the regularized least-squares formula:
+
+\[
+\beta_0 = (X^T X + \lambda I)^{-1} X^T y
+\]
+
+This initialization stabilizes the computation, particularly when \(X^T X\) is ill-conditioned.
+
+The objective function combines:
+
+1. The **negative log-likelihood** from logistic regression.
+2. An **L2 penalty term** to shrink coefficient values and mitigate overfitting.
+
+Probabilities (\(p\)) are computed as:
+
+\[
+p = \frac{1}{1 + \exp(-X\beta)}
+\]
+
+To prevent numerical instability, probabilities are bounded within a small range, such as \([10^{-6}, 1 - 10^{-6}]\).
+
+The regularized negative log-likelihood is minimized using the "L-BFGS-B" optimization algorithm, with a maximum of 1,000 iterations. The algorithm outputs the coefficient vector (\(\beta\)) that minimizes the objective function.
+
+Plug the `x` and `y` variables that were established into the model after data preparation is complete. Applying the `logistic_regression` function results should yield something similiar to this:
 
 ```{r}
 log_reg <- logistic_regression(x, y)
 print(log_reg)
 ```
-This function has the inputs and outputs as below:
 
-Inputs:-
+## Bootstrap Confidence Interval Function
 
-`x`: A matrix of predictors, where each row corresponds to an observation, and each column corresponds to a feature (including a column of 1s for the intercept).
+```
+bootstrap_ci <- function(X, y, n_boot = 20, alpha = 0.05) {
+  # Initialize a matrix to store the bootstrap estimates
+  beta_estimates <- matrix(0, nrow = ncol(X), ncol = n_boot)
+  
+  for (b in 1:n_boot) {
+    # Bootstrap sample indices
+    idx <- sample(seq_len(nrow(X)), replace = TRUE)
+    
+    # Get bootstrap samples
+    X_boot <- X[idx, , drop = FALSE]
+    y_boot <- y[idx]
+    
+    # Store the estimated coefficients
+    beta_estimates[, b] <- logistic_regression(X_boot, y_boot)
+  }
+  
+  # Calculate the confidence intervals
+  lower <- numeric(ncol(X))
+  upper <- numeric(ncol(X))
+  
+  for (j in 1:ncol(X)) {
+    # Sort the bootstrap estimates for the jth coefficient
+    sorted_estimates <- sort(beta_estimates[j, ])
+    
+    # Calculate the quantile indices
+    lower_idx <- ceiling(alpha / 2 * n_boot)
+    upper_idx <- floor((1 - alpha / 2) * n_boot)
+    
+    # Assign the quantiles to the confidence intervals
+    lower[j] <- sorted_estimates[lower_idx]
+    upper[j] <- sorted_estimates[upper_idx]
+  }
+  
+  # Combine the lower and upper bounds into a matrix
+  ci <- cbind(lower, upper)
+  return(ci)
+}
 
-`y`: A binary response vector (0 or 1) representing the outcome variable.
+```
+The `bootstrap_ci` function computes bootstrap confidence intervals for the coefficients of a logistic regression model through repeated resampling of the data.
 
-Output:-
+1. **Initialization**: 
+   - A matrix is created to store bootstrap estimates for each coefficient across multiple iterations.
 
-A vector of estimated coefficients.
+2. **Bootstrap Resampling**: 
+   - For each iteration:
+     - A new dataset is generated by sampling the rows of the input data matrix \(X\) and the response vector \(y\) **with replacement**.
+     - Logistic regression coefficients are estimated from the resampled dataset and stored in the matrix.
 
+3. **Confidence Interval Calculation**:
+   - Once all bootstrap estimates are collected:
+     - For each coefficient:
+       - The bootstrap estimates are **sorted**.
+       - The lower and upper bounds of the confidence interval are determined based on the quantiles corresponding to the chosen significance level (\(\alpha\)):
+         - **Lower bound**: Value at the \(\alpha/2\)-quantile.
+         - **Upper bound**: Value at the \((1 - \alpha/2)\)-quantile.
+   - The confidence intervals for all coefficients are assembled into a matrix.
 
-
-## FUNCTION-2 -Bootstrap confidence interval
-
-
-`bootstrap_ci` function  computes confidence intervals for logistic regression coefficients using bootstrap resampling.
+The function returns a matrix of confidence intervals, providing an assessment of the uncertainty in the logistic regression coefficients. These intervals reflect the variability in the estimates due to the underlying data distribution. The user can adjust the alpha value and the number of times the data is bootstrapped.
 
 ```{r}
 ci <- bootstrap_ci(x, y, n_boot = 15, alpha = 0.01)
 print(ci)
 ```
-This function has the inputs and outputs as below:
 
-Inputs:-
+## Computing a Confusion Matrix and Other Metrics
 
-`X`: A numeric matrix of predictor variables.
+The `compute_metrics` function evaluates the performance of a binary classification model by comparing predicted class labels to the true labels. It uses a specified threshold to convert predicted probabilities into binary class predictions and then calculates various performance metrics.
 
-`y`: A binary numeric vector of responses (0/1).
+The function generates a confusion matrix to summarize prediction outcomes (e.g., correct and incorrect classifications) and computes key metrics such as accuracy, sensitivity, specificity, and false discovery rate. Additionally, it provides measures like the diagnostic odds ratio to assess the overall reliability of the model and prevalence to understand the proportion of positive cases in the data.
 
-`n_boot`: Number of bootstrap iterations (default is 20).
+The results help users assess the effectiveness of their classification model and identify areas for improvement.
 
-`alpha`: Significance level for confidence intervals (default is 0.05).
-
-Outputs:-
-
--Estimated coefficients.
-
--Lower and upper bounds of the confidence intervals.
-
-
-
-## FUNCTION-3 Confusion_metrics
-
-The `confusion_metrics` function calculates a confusion matrix and various classification metrics for evaluating binary classification models. It takes the actual binary values `(y_true)`, predicted probabilities `(y_pred)`, and an optional classification threshold as inputs and returns a list containing the confusion matrix and performance metrics.
-
+```
+compute_metrics <- function(y_true, y_pred, threshold = 0.5) {
+  # Convert predicted probabilities to binary classification using the threshold
+  y_pred_class <- ifelse(y_pred > threshold, 1, 0)
+  
+  # Confusion matrix: rows = Actual, columns = Predicted
+  confusion_matrix <- table(
+    Predicted = factor(y_pred_class, levels = c(0, 1)),
+    Actual = factor(y_true, levels = c(0, 1))
+  )
+  
+  # Handle cases where classes may be missing
+  tp <- confusion_matrix[2, 2] # True Positives
+  tn <- confusion_matrix[1, 1] # True Negatives
+  fp <- confusion_matrix[2, 1] # False Positives
+  fn <- confusion_matrix[1, 2] # False Negatives
+  
+  # Safely calculate metrics to avoid division by zero
+  accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
+  sensitivity <- ifelse(tp + fn > 0, tp / (tp + fn), NA)
+  specificity <- ifelse(tn + fp > 0, tn / (tn + fp), NA)
+  false_discovery_rate <- ifelse(tp + fp > 0, fp / (tp + fp), NA)
+  diagnostic_odds_ratio <- ifelse(
+    !is.na(sensitivity) && !is.na(specificity) && sensitivity > 0 && specificity > 0,
+    (sensitivity * specificity) / ((1 - sensitivity) * (1 - specificity)),
+    NA
+  )
+  
+  # Calculate prevalence
+  prevalence <- mean(y_true)
+  
+  # Return all metrics as a list
+  list(
+    confusion_matrix = confusion_matrix,
+    accuracy = accuracy,
+    sensitivity = sensitivity,
+    specificity = specificity,
+    false_discovery_rate = false_discovery_rate,
+    diagnostic_odds_ratio = diagnostic_odds_ratio,
+    prevalence = prevalence
+  )
+}
+```
+In the compute_metrics function, y_pred is used to classify observations as belonging to the positive or negative class based on a specified threshold (e.g., 0.5). The classification derived from y_pred forms the basis for constructing the confusion matrix, which is used to compute key metrics such as accuracy, sensitivity (true positive rate), specificity (true negative rate), false discovery rate, and diagnostic odds ratio. These metrics provide a comprehensive understanding of the model’s predictive performance, including its ability to correctly identify positive and negative cases and its balance between false positives and false negatives.So, to calculate `y_pred` the following code is used:
 
 ```{r}
 y_pred <- exp(x %*% log_reg) / (1 + exp(x %*% log_reg))
+```
+
+```{r}
 metrics <- compute_metrics(y, y_pred, threshold = 0.5)
 print(metrics)
 ```
 
-This function has the inputs and outputs as below:
+### Utilizing the Package Shiny App
 
-Inputs:-
+A Shiny App was developed that utilizes this R package.
 
-`y_true`: A vector of actual binary labels (0 or 1).
+The **Binary Classifier Shiny App** is an interactive web application designed to perform binary classification using logistic regression. It provides users with a streamlined workflow to upload datasets, train models, and evaluate their performance.
 
-`y_pred`: A vector of predicted probabilities (typically the output from a logistic regression model).
+**Key Features**
 
-threshold: A value to convert predicted probabilities into binary predictions (default is 0.5). This allows users to set a custom decision boundary to classify probabilities as 0 or 1.
+1. **Data Upload**:
+   - Accepts `.csv` files for analysis.
+   - Dynamically adapts to the uploaded dataset, allowing users to select predictor and response variables.
 
-Outputs:-
+2. **Logistic Regression**:
+   - Implements logistic regression with regularization (`lambda`).
+   - Displays regression coefficients and their statistical significance.
 
--Accuracy
+3. **Bootstrap Confidence Intervals**:
+   - Computes confidence intervals for regression coefficients using bootstrap resampling.
+   - Allows users to specify the number of bootstrap samples and confidence level (`alpha`).
 
--precesion
+4. **Classification Metrics**:
+   - Evaluates model performance with metrics including:
+     - Accuracy
+     - Sensitivity
+     - Specificity
+     - False Discovery Rate
+     - Diagnostic Odds Ratio
+   - Displays a confusion matrix for further insights.
 
--Sensitivity
+5. **Interactive Tabs**:
+   - Organized outputs with separate tabs for regression results, confidence intervals, and performance metrics.
 
--Specificity
+**Workflow**
 
--false discovery rate
+1. **Upload Data**:
+   - Users upload a `.csv` file and preview the dataset.
+   - Select the response variable (binary) and predictors.
 
--diagnostic odds ratio
+2. **Train Logistic Regression Model**:
+   - The app trains a logistic regression model with user-defined parameters.
+   - Displays regression coefficients.
 
--prevalence
+3. **Evaluate Model**:
+   - Bootstrap resampling generates confidence intervals.
+   - Classification metrics and confusion matrices are displayed.
+
+```{r eval=FALSE, message=FALSE}
+shiny::runUrl("https://github.com/AU-R-Programming/FinalProject_Group3/raw/main/Shiny_App.zip")
 ```
-source("C:/Users/aishw/OneDrive - Auburn University/Documents/GitHub/FinalProject_Group3/R/logistic_regression.R")
-```
 
+**Suggestions**: I suggest using the same pre-data manipulation steps as seen in this vignette before using your csv in the shiny app. This is because the same functions were used to create the app meaning the data must be similar. That being said it is suggested that you export your processed data csv and use that in the app.
 
+### Sources
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+1. [Kyndall ChatGpt ShinyApp](https://chatgpt.com/share/6752070d-8c00-800c-8861-6cca77e63edc)
+2. [Kyndall ChatGpt Everything Else](https://chatgpt.com/share/674ce00f-c60c-800c-bced-b59ec7e60786)
+3. [Kyndall Chatgpt for Checking Matrix](https://chatgpt.com/share/675207d0-02d4-800c-b361-f50706ad87bd)
 
 
 
