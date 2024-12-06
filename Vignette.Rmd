@@ -1,0 +1,196 @@
+---
+title: "Vignette "
+output: html_document
+date: "2024-12-05"
+---
+
+Github Repository Name - FinalProject_Group3
+
+Pacakge - binaryClassifier
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Introduction
+
+This vignette provides an introduction to `BinaryClassifier`, demonstrating its key features and how to use it for your analysis. `BinaryClassifier` is designed to help users perform supervised binary classification using numerical optimization.
+
+## Installation
+
+To install `BinaryClassifier`, you can use the following command:
+```{r}
+#Install from GitHub
+#library(devtools)
+#install_github("AU-R-Programming/FinalProject_Group3")
+library(binaryClassifier)
+```
+our package includes the following functionalities:
+
+Initial Values for Optimization
+
+Bootstrap Confidence Intervals
+
+Confusion Matrix
+
+-Prevalence
+
+-Accuracy
+
+-Sensitivity
+
+-Specificity
+
+-False Discovery Rate
+
+-Diagnostic Odds Ratio
+
+## Reading the data 
+
+This dataset is taken from canvas course page.
+
+```{r}
+bank <- read.csv("C:\\Users\\aishw\\Downloads\\bank.csv", sep=";")
+
+head(bank)
+```
+
+## Preparing the data
+
+```{r}
+bank$age_binary <- (bank$age - min(bank$age)) / (max(bank$age) - min(bank$age))
+bank$balance_binary <- ifelse(bank$balance > median(bank$balance), 1, 0)
+bank$education <- as.factor(bank$education)
+head(bank)
+```
+
+```{r}
+predictors <- bank[, c("age", "education")]
+
+response <- bank$balance_binary
+
+edu <- model.matrix(~ education - 1, data = bank)
+
+x <- cbind(1, predictors$age, edu)
+y <- response
+
+print(dim(x))
+print(length(y))
+```
+## Usage of Our Package functions with above dataset
+
+We have three functions included in this package , below expalins the how to use these pacakge functions with examples.
+
+
+## FUNCTION-1-Logistic Regresssion
+
+
+ `logistic_regression()` function, which estimates the coefficients of a logistic regression model using numerical optimization. The function maximizes the log-likelihood to estimate the model parameters.
+
+
+```{r}
+log_reg <- logistic_regression(x, y)
+print(log_reg)
+```
+This function has the inputs and outputs as below:
+
+Inputs:-
+
+`x`: A matrix of predictors, where each row corresponds to an observation, and each column corresponds to a feature (including a column of 1s for the intercept).
+
+`y`: A binary response vector (0 or 1) representing the outcome variable.
+
+Output:-
+
+A vector of estimated coefficients.
+
+
+
+## FUNCTION-2 -Bootstrap confidence interval
+
+
+`bootstrap_ci` function  computes confidence intervals for logistic regression coefficients using bootstrap resampling.
+
+```{r}
+ci <- bootstrap_ci(x, y, n_boot = 15, alpha = 0.01)
+print(ci)
+```
+This function has the inputs and outputs as below:
+
+Inputs:-
+
+`X`: A numeric matrix of predictor variables.
+
+`y`: A binary numeric vector of responses (0/1).
+
+`n_boot`: Number of bootstrap iterations (default is 20).
+
+`alpha`: Significance level for confidence intervals (default is 0.05).
+
+Outputs:-
+
+-Estimated coefficients.
+
+-Lower and upper bounds of the confidence intervals.
+
+
+
+## FUNCTION-3 Confusion_metrics
+
+The `confusion_metrics` function calculates a confusion matrix and various classification metrics for evaluating binary classification models. It takes the actual binary values `(y_true)`, predicted probabilities `(y_pred)`, and an optional classification threshold as inputs and returns a list containing the confusion matrix and performance metrics.
+
+
+```{r}
+y_pred <- exp(x %*% log_reg) / (1 + exp(x %*% log_reg))
+metrics <- compute_metrics(y, y_pred, threshold = 0.5)
+print(metrics)
+```
+
+This function has the inputs and outputs as below:
+
+Inputs:-
+
+`y_true`: A vector of actual binary labels (0 or 1).
+
+`y_pred`: A vector of predicted probabilities (typically the output from a logistic regression model).
+
+threshold: A value to convert predicted probabilities into binary predictions (default is 0.5). This allows users to set a custom decision boundary to classify probabilities as 0 or 1.
+
+Outputs:-
+
+-Accuracy
+
+-precesion
+
+-Sensitivity
+
+-Specificity
+
+-false discovery rate
+
+-diagnostic odds ratio
+
+-prevalence
+```
+source("C:/Users/aishw/OneDrive - Auburn University/Documents/GitHub/FinalProject_Group3/R/logistic_regression.R")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
